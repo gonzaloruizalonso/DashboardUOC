@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,26 +8,48 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .task-done { text-decoration: line-through; color: #9ca3af; background-color: #f9fafb; }
-        
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .task-done {
+            text-decoration: line-through;
+            color: #9ca3af;
+            background-color: #f9fafb;
+        }
+
         /* Animación suave para el acordeón en móvil */
-        .col-content { transition: max-height 0.3s ease-in-out; }
+        .col-content {
+            transition: max-height 0.3s ease-in-out;
+        }
     </style>
 </head>
+
 <body class="bg-slate-100 h-screen flex flex-col font-sans overflow-hidden text-slate-800">
 
     <!-- Cabecera -->
     <header class="bg-white shadow-sm px-4 md:px-6 py-3 md:py-4 flex justify-between items-center z-10">
         <div>
-            <h1 class="text-xl md:text-2xl font-bold text-slate-800"><i class="fa-solid fa-graduation-cap text-blue-600 mr-2"></i>Dashboard UOC</h1>
+            <h1 class="text-xl md:text-2xl font-bold text-slate-800"><i
+                    class="fa-solid fa-graduation-cap text-blue-600 mr-2"></i>Dashboard UOC</h1>
             <p class="text-xs md:text-sm text-slate-500">Tablón Público Sincronizado</p>
         </div>
-        
-        <div class="text-xs md:text-sm text-slate-400 flex items-center bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+
+        <div
+            class="text-xs md:text-sm text-slate-400 flex items-center bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
             <i class="fa-solid fa-cloud-arrow-up text-blue-500 mr-2"></i> Guardado automático
         </div>
     </header>
@@ -35,7 +58,8 @@
     <main class="flex-1 w-full p-2 md:p-4 overflow-y-auto md:overflow-hidden">
         <div id="board" class="grid grid-cols-1 md:grid-cols-4 gap-4 h-auto md:h-full pb-20 md:pb-0">
             <!-- Loader inicial -->
-            <div class="col-span-1 md:col-span-4 flex flex-col items-center justify-center h-full text-slate-400 mt-20 md:mt-0">
+            <div
+                class="col-span-1 md:col-span-4 flex flex-col items-center justify-center h-full text-slate-400 mt-20 md:mt-0">
                 <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-blue-500"></i>
                 <p>Conectando con la base de datos...</p>
             </div>
@@ -51,16 +75,34 @@
         // ==========================================
         // CONFIGURACIÓN PARA GITHUB PAGES / LOCAL
         // ==========================================
-        let firebaseConfig;
-        try {
-            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                // SI ESTÁS EN GITHUB, PEGA AQUÍ TU CONFIG DE FIREBASE:
-                // apiKey: "AIzaSyB...",
-                // authDomain: "tu-proyecto.firebaseapp.com",
-                // projectId: "tu-proyecto",
-                // ...
-            };
-        } catch (e) { console.error("Error al cargar config de Firebase"); }
+        let firebaseConfig = {
+            apiKey: "AIzaSyBpa4qIL6JYeeetSsYIwvYD0ozVigYss5A",
+            authDomain: "dashboard-uoc.firebaseapp.com",
+            projectId: "dashboard-uoc",
+            storageBucket: "dashboard-uoc.firebasestorage.app",
+            messagingSenderId: "338779182880",
+            appId: "1:338779182880:web:0db2bf4501f4f452aba945",
+            measurementId: "G-5YD3KRDG3K"
+        };
+
+        // Magia de Canvas (si estamos aquí dentro, usa las credenciales automáticas)
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        }
+
+        // Si estamos en GitHub y no has puesto tus claves, mostramos un aviso en vez del loader infinito
+        if (!firebaseConfig.apiKey) {
+            document.getElementById('board').innerHTML = `
+                <div class="col-span-1 md:col-span-4 flex flex-col items-center justify-center h-full text-slate-500 mt-10 md:mt-0 text-center px-4">
+                    <i class="fa-solid fa-triangle-exclamation text-5xl mb-4 text-orange-500"></i>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Faltan las llaves de Firebase</h2>
+                    <p class="max-w-md bg-white p-4 rounded-lg shadow-sm border border-slate-200 mt-4 text-sm">
+                        Para que esto funcione en GitHub Pages, necesitas crear un proyecto gratuito en Firebase y pegar tu <code>firebaseConfig</code> en el código HTML. Sigue las instrucciones del chat.
+                    </p>
+                </div>
+            `;
+            throw new Error("Deteniendo ejecución: Falta configuración de Firebase para GitHub Pages.");
+        }
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'uoc-dashboard-gonzalo-public';
 
@@ -73,10 +115,10 @@
             "Creación de vídeo",
             "Cultura digital",
             "Diseño gráfico",
-            "IA generativa para la creación multimedia"
+            "IA generativa"
         ];
-        
-        let tasksData = { "Creación de vídeo": [], "Cultura digital": [], "Diseño gráfico": [], "IA generativa para la creación multimedia": [] };
+
+        let tasksData = { "Creación de vídeo": [], "Cultura digital": [], "Diseño gráfico": [], "IA generativa": [] };
         let currentUser = null;
         let unsubscribeSnapshot = null;
 
@@ -85,7 +127,7 @@
             "Creación de vídeo": true,
             "Cultura digital": false,
             "Diseño gráfico": false,
-            "IA generativa para la creación multimedia": false
+            "IA generativa": false
         };
 
         // 1. Autenticación Robusta (Cero fricción)
@@ -103,7 +145,7 @@
                     await signInAnonymously(auth);
                 } catch (fallbackError) {
                     console.error("Error crítico de autenticación:", fallbackError);
-                    document.getElementById('board').innerHTML = `<div class="col-span-4 text-center text-red-500 mt-10"><i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i><br>Error de conexión con la base de datos. Si estás fuera del entorno local, revisa la configuración de Firebase.</div>`;
+                    document.getElementById('board').innerHTML = `<div class="col-span-4 text-center text-red-500 mt-10"><i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i><br>Error de conexión con la base de datos. Asegúrate de haber habilitado Authentication (Anónimo) en Firebase.</div>`;
                 }
             }
         };
@@ -122,11 +164,11 @@
 
             // Usamos una colección pública genérica y fija, sin claves.
             const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tasks');
-            
+
             unsubscribeSnapshot = onSnapshot(colRef, (snapshot) => {
                 // Vaciamos arrays locales
-                tasksData = { "Creación de vídeo": [], "Cultura digital": [], "Diseño gráfico": [], "IA generativa para la creación multimedia": [] };
-                
+                tasksData = { "Creación de vídeo": [], "Cultura digital": [], "Diseño gráfico": [], "IA generativa": [] };
+
                 snapshot.forEach(doc => {
                     const task = doc.data();
                     if (tasksData[task.subject]) {
@@ -136,7 +178,7 @@
                 renderBoard();
             }, (error) => {
                 console.error("Error al leer tareas:", error);
-                document.getElementById('board').innerHTML = `<div class="col-span-4 text-center text-red-500 mt-10"><i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i><br>Error al cargar los datos. Permisos denegados o base de datos inaccesible.</div>`;
+                document.getElementById('board').innerHTML = `<div class="col-span-4 text-center text-red-500 mt-10"><i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i><br>Error al cargar los datos. Revisa las reglas de seguridad de Firestore (deben estar en modo prueba).</div>`;
             });
         }
 
@@ -148,10 +190,10 @@
             if (!text) return;
 
             input.value = ''; // Feedback visual instantáneo
-            
+
             const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tasks');
             const newDocId = Date.now().toString() + Math.floor(Math.random() * 1000);
-            
+
             await setDoc(doc(colRef, newDocId), {
                 subject: subject,
                 text: text,
@@ -189,12 +231,12 @@
                 col.className = 'bg-white md:rounded-xl shadow-md md:shadow-lg flex flex-col md:h-full border border-slate-200 overflow-hidden rounded-lg mb-2 md:mb-0';
 
                 const isExpanded = expandedCols[subject];
-                
+
                 // Cabecera
                 const header = document.createElement('div');
                 header.className = `${colors[index]} text-white p-3 md:p-4 font-semibold flex justify-between items-center text-sm md:text-base tracking-wide shadow-sm cursor-pointer md:cursor-default transition-colors hover:brightness-110`;
-                header.onclick = () => { if(window.innerWidth < 768) window.toggleMobileCol(subject); };
-                
+                header.onclick = () => { if (window.innerWidth < 768) window.toggleMobileCol(subject); };
+
                 header.innerHTML = `
                     <div class="flex items-center">
                         <i class="fa-regular fa-folder-open mr-2 opacity-80"></i>
@@ -202,7 +244,7 @@
                     </div>
                     <i class="fa-solid fa-chevron-down md:hidden transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i>
                 `;
-                
+
                 // Contenedor de la lista y el input
                 const contentWrapper = document.createElement('div');
                 contentWrapper.className = `flex-col flex-1 min-h-0 bg-slate-50/50 ${isExpanded ? 'flex' : 'hidden md:flex'}`;
@@ -216,11 +258,11 @@
                     list.innerHTML = `<p class="text-center text-slate-400 text-xs mt-6 mb-6 italic bg-slate-100 py-3 rounded-lg border border-dashed border-slate-300">Aún no hay tareas.<br>¡Buen trabajo!</p>`;
                 } else {
                     const sortedTasks = [...tasks].sort((a, b) => a.done === b.done ? (b.createdAt - a.createdAt) : a.done ? 1 : -1);
-                    
+
                     sortedTasks.forEach(task => {
                         const taskEl = document.createElement('div');
                         taskEl.className = `group flex items-start justify-between p-2.5 bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-200 hover:border-blue-300 ${task.done ? 'task-done' : ''}`;
-                        
+
                         taskEl.innerHTML = `
                             <div class="flex items-start gap-3 flex-1 overflow-hidden cursor-pointer" onclick="window.toggleTask('${task.id}', ${task.done})">
                                 <button class="mt-0.5 flex-shrink-0 text-lg ${task.done ? 'text-green-500 hover:text-green-600' : 'text-slate-300 hover:text-blue-500'} transition-colors">
@@ -240,7 +282,7 @@
                 const inputArea = document.createElement('div');
                 inputArea.className = 'p-3 bg-white border-t border-slate-200 flex gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]';
                 const inputId = `input_${index}`;
-                
+
                 inputArea.innerHTML = `
                     <input id="${inputId}" type="text" placeholder="Añadir tarea..." class="flex-1 bg-slate-100 text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-all border border-transparent focus:border-blue-300" onkeypress="if(event.key === 'Enter') window.addTask('${subject}', '${inputId}')">
                     <button onclick="window.addTask('${subject}', '${inputId}')" class="bg-slate-800 hover:bg-black text-white rounded-lg px-4 py-2 transition-colors flex items-center justify-center shadow-sm">
@@ -262,4 +304,5 @@
 
     </script>
 </body>
+
 </html>
