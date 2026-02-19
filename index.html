@@ -1,74 +1,43 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard UOC - Nube</title>
+    <title>Dashboard UOC - Público</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        .task-done {
-            text-decoration: line-through;
-            color: #9ca3af;
-            background-color: #f9fafb;
-        }
-
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .task-done { text-decoration: line-through; color: #9ca3af; background-color: #f9fafb; }
+        
         /* Animación suave para el acordeón en móvil */
-        .col-content {
-            transition: max-height 0.3s ease-in-out;
-        }
+        .col-content { transition: max-height 0.3s ease-in-out; }
     </style>
 </head>
-
 <body class="bg-slate-100 h-screen flex flex-col font-sans overflow-hidden text-slate-800">
 
     <!-- Cabecera -->
-    <header
-        class="bg-white shadow-sm px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row justify-between items-center z-10 gap-3">
-        <div class="text-center md:text-left">
-            <h1 class="text-xl md:text-2xl font-bold text-slate-800"><i
-                    class="fa-solid fa-graduation-cap text-blue-600 mr-2"></i>Dashboard UOC</h1>
-            <p class="text-xs md:text-sm text-slate-500">Sincronización en la Nube</p>
+    <header class="bg-white shadow-sm px-4 md:px-6 py-3 md:py-4 flex justify-between items-center z-10">
+        <div>
+            <h1 class="text-xl md:text-2xl font-bold text-slate-800"><i class="fa-solid fa-graduation-cap text-blue-600 mr-2"></i>Dashboard UOC</h1>
+            <p class="text-xs md:text-sm text-slate-500">Tablón Público Sincronizado</p>
         </div>
-
-        <!-- Sistema de clave para sincronizar entre PC y Móvil -->
-        <div class="flex items-center bg-slate-100 rounded-lg p-1.5 border border-slate-200 shadow-inner">
-            <i class="fa-solid fa-key text-slate-400 ml-2 mr-2 text-sm"></i>
-            <input id="syncKeyInput" type="text"
-                class="bg-transparent border-none outline-none w-28 md:w-32 text-sm font-semibold text-slate-700 focus:ring-0"
-                placeholder="Tu Clave" title="Usa la misma clave en tu móvil y en tu PC para ver las mismas tareas">
-            <button onclick="window.updateSyncKey()"
-                class="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-1.5 text-xs font-bold transition-colors ml-1">
-                Sincronizar
-            </button>
+        
+        <div class="text-xs md:text-sm text-slate-400 flex items-center bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+            <i class="fa-solid fa-cloud-arrow-up text-blue-500 mr-2"></i> Guardado automático
         </div>
     </header>
 
     <!-- Contenedor principal de las 4 columnas -->
-    <!-- En móvil (por defecto) es 1 columna y hace scroll. En escritorio (md) son 4 columnas sin scroll general -->
     <main class="flex-1 w-full p-2 md:p-4 overflow-y-auto md:overflow-hidden">
         <div id="board" class="grid grid-cols-1 md:grid-cols-4 gap-4 h-auto md:h-full pb-20 md:pb-0">
-            <!-- Las columnas se generan por JS -->
-            <div class="col-span-1 md:col-span-4 flex items-center justify-center h-full text-slate-400">
-                <i class="fa-solid fa-circle-notch fa-spin text-3xl mr-3"></i> Conectando con la base de datos...
+            <!-- Loader inicial -->
+            <div class="col-span-1 md:col-span-4 flex flex-col items-center justify-center h-full text-slate-400 mt-20 md:mt-0">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-blue-500"></i>
+                <p>Conectando con la base de datos...</p>
             </div>
         </div>
     </main>
@@ -80,11 +49,8 @@
         import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
-        // CONFIGURACIÓN PARA GITHUB PAGES
+        // CONFIGURACIÓN PARA GITHUB PAGES / LOCAL
         // ==========================================
-        // Cuando subas esto a GitHub Pages, el entorno no tendrá __firebase_config.
-        // Necesitarás ir a console.firebase.google.com, crear un proyecto gratis,
-        // copiar tu configuración y reemplazar el bloque de abajo.
         let firebaseConfig;
         try {
             firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -96,7 +62,7 @@
             };
         } catch (e) { console.error("Error al cargar config de Firebase"); }
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'uoc-dashboard-gonzalo';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'uoc-dashboard-gonzalo-public';
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -109,14 +75,10 @@
             "Diseño gráfico",
             "IA generativa para la creación multimedia"
         ];
-
+        
         let tasksData = { "Creación de vídeo": [], "Cultura digital": [], "Diseño gráfico": [], "IA generativa para la creación multimedia": [] };
         let currentUser = null;
         let unsubscribeSnapshot = null;
-
-        // Recuperamos la clave de sincronización del almacenamiento local (o usamos una por defecto)
-        let syncKey = localStorage.getItem('uoc_sync_key') || 'Gonzalo123';
-        document.getElementById('syncKeyInput').value = syncKey;
 
         // Estado de los acordeones en móvil (por defecto el primero abierto)
         let expandedCols = {
@@ -126,7 +88,7 @@
             "IA generativa para la creación multimedia": false
         };
 
-        // 1. Autenticación (Invisible para el usuario)
+        // 1. Autenticación Robusta (Cero fricción)
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -135,8 +97,14 @@
                     await signInAnonymously(auth);
                 }
             } catch (error) {
-                console.error("Error de autenticación:", error);
-                document.getElementById('board').innerHTML = `<div class="col-span-4 text-center text-red-500 mt-10"><i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i><br>Error de conexión. Si estás en GitHub Pages, recuerda configurar Firebase.</div>`;
+                console.warn("Fallo con el token principal, intentando acceso anónimo puro...", error);
+                // Si falla el token (suele pasar si caduca), forzamos el anónimo
+                try {
+                    await signInAnonymously(auth);
+                } catch (fallbackError) {
+                    console.error("Error crítico de autenticación:", fallbackError);
+                    document.getElementById('board').innerHTML = `<div class="col-span-4 text-center text-red-500 mt-10"><i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i><br>Error de conexión con la base de datos. Si estás fuera del entorno local, revisa la configuración de Firebase.</div>`;
+                }
             }
         };
 
@@ -147,18 +115,18 @@
             }
         });
 
-        // 2. Conexión en Tiempo Real con la base de datos
+        // 2. Conexión en Tiempo Real (Tablón Público Único)
         function setupRealtimeListener() {
             if (!currentUser) return;
-            if (unsubscribeSnapshot) unsubscribeSnapshot(); // Limpiamos listener anterior si cambiamos la clave
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-            // Escuchamos los cambios en tiempo real
-            const colRef = collection(db, 'artifacts', appId, 'public', 'data', `tasks_${syncKey}`);
-
+            // Usamos una colección pública genérica y fija, sin claves.
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tasks');
+            
             unsubscribeSnapshot = onSnapshot(colRef, (snapshot) => {
                 // Vaciamos arrays locales
                 tasksData = { "Creación de vídeo": [], "Cultura digital": [], "Diseño gráfico": [], "IA generativa para la creación multimedia": [] };
-
+                
                 snapshot.forEach(doc => {
                     const task = doc.data();
                     if (tasksData[task.subject]) {
@@ -168,21 +136,22 @@
                 renderBoard();
             }, (error) => {
                 console.error("Error al leer tareas:", error);
+                document.getElementById('board').innerHTML = `<div class="col-span-4 text-center text-red-500 mt-10"><i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i><br>Error al cargar los datos. Permisos denegados o base de datos inaccesible.</div>`;
             });
         }
 
-        // 3. Funciones de Base de Datos (Expuestas a window para poder usarlas desde el HTML)
+        // 3. Funciones de Base de Datos
         window.addTask = async (subject, inputId) => {
             if (!currentUser) return;
             const input = document.getElementById(inputId);
             const text = input.value.trim();
             if (!text) return;
 
-            input.value = ''; // Limpiamos rápido para dar feedback visual instantáneo
-
-            const colRef = collection(db, 'artifacts', appId, 'public', 'data', `tasks_${syncKey}`);
+            input.value = ''; // Feedback visual instantáneo
+            
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'tasks');
             const newDocId = Date.now().toString() + Math.floor(Math.random() * 1000);
-
+            
             await setDoc(doc(colRef, newDocId), {
                 subject: subject,
                 text: text,
@@ -193,24 +162,14 @@
 
         window.toggleTask = async (id, currentStatus) => {
             if (!currentUser) return;
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', `tasks_${syncKey}`, id);
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tasks', id);
             await updateDoc(docRef, { done: !currentStatus });
         };
 
         window.deleteTask = async (id) => {
             if (!currentUser) return;
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', `tasks_${syncKey}`, id);
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tasks', id);
             await deleteDoc(docRef);
-        };
-
-        window.updateSyncKey = () => {
-            const newVal = document.getElementById('syncKeyInput').value.trim();
-            if (newVal && newVal !== syncKey) {
-                syncKey = newVal;
-                localStorage.setItem('uoc_sync_key', syncKey);
-                document.getElementById('board').innerHTML = `<div class="col-span-4 flex justify-center text-slate-400 mt-10"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando sala '${syncKey}'...</div>`;
-                setupRealtimeListener();
-            }
         };
 
         window.toggleMobileCol = (subject) => {
@@ -227,16 +186,15 @@
 
             subjects.forEach((subject, index) => {
                 const col = document.createElement('div');
-                // En móvil el alto se ajusta al contenido. En escritorio (md:h-full) ocupa el 100% de la pantalla
                 col.className = 'bg-white md:rounded-xl shadow-md md:shadow-lg flex flex-col md:h-full border border-slate-200 overflow-hidden rounded-lg mb-2 md:mb-0';
 
                 const isExpanded = expandedCols[subject];
-
-                // Cabecera (En móvil es un botón clickable)
+                
+                // Cabecera
                 const header = document.createElement('div');
                 header.className = `${colors[index]} text-white p-3 md:p-4 font-semibold flex justify-between items-center text-sm md:text-base tracking-wide shadow-sm cursor-pointer md:cursor-default transition-colors hover:brightness-110`;
-                header.onclick = () => { if (window.innerWidth < 768) window.toggleMobileCol(subject); };
-
+                header.onclick = () => { if(window.innerWidth < 768) window.toggleMobileCol(subject); };
+                
                 header.innerHTML = `
                     <div class="flex items-center">
                         <i class="fa-regular fa-folder-open mr-2 opacity-80"></i>
@@ -244,8 +202,8 @@
                     </div>
                     <i class="fa-solid fa-chevron-down md:hidden transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i>
                 `;
-
-                // Contenedor de la lista y el input (Se oculta en móvil si no está expandido)
+                
+                // Contenedor de la lista y el input
                 const contentWrapper = document.createElement('div');
                 contentWrapper.className = `flex-col flex-1 min-h-0 bg-slate-50/50 ${isExpanded ? 'flex' : 'hidden md:flex'}`;
 
@@ -258,11 +216,11 @@
                     list.innerHTML = `<p class="text-center text-slate-400 text-xs mt-6 mb-6 italic bg-slate-100 py-3 rounded-lg border border-dashed border-slate-300">Aún no hay tareas.<br>¡Buen trabajo!</p>`;
                 } else {
                     const sortedTasks = [...tasks].sort((a, b) => a.done === b.done ? (b.createdAt - a.createdAt) : a.done ? 1 : -1);
-
+                    
                     sortedTasks.forEach(task => {
                         const taskEl = document.createElement('div');
                         taskEl.className = `group flex items-start justify-between p-2.5 bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-200 hover:border-blue-300 ${task.done ? 'task-done' : ''}`;
-
+                        
                         taskEl.innerHTML = `
                             <div class="flex items-start gap-3 flex-1 overflow-hidden cursor-pointer" onclick="window.toggleTask('${task.id}', ${task.done})">
                                 <button class="mt-0.5 flex-shrink-0 text-lg ${task.done ? 'text-green-500 hover:text-green-600' : 'text-slate-300 hover:text-blue-500'} transition-colors">
@@ -282,7 +240,7 @@
                 const inputArea = document.createElement('div');
                 inputArea.className = 'p-3 bg-white border-t border-slate-200 flex gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]';
                 const inputId = `input_${index}`;
-
+                
                 inputArea.innerHTML = `
                     <input id="${inputId}" type="text" placeholder="Añadir tarea..." class="flex-1 bg-slate-100 text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-all border border-transparent focus:border-blue-300" onkeypress="if(event.key === 'Enter') window.addTask('${subject}', '${inputId}')">
                     <button onclick="window.addTask('${subject}', '${inputId}')" class="bg-slate-800 hover:bg-black text-white rounded-lg px-4 py-2 transition-colors flex items-center justify-center shadow-sm">
@@ -304,5 +262,4 @@
 
     </script>
 </body>
-
 </html>
